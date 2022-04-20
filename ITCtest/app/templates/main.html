@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+		<meta charset="utf-8">
+		<style>
+			#map {
+				padding-top: 50%;
+
+			}
+
+			.imp {
+				margin-top: 48px;
+			}
+
+			body {
+
+  				margin: 0;
+  				font-family: Arial, Helvetica, sans-serif;
+  				background-color: #93ccea;
+			}
+
+			.topnav {
+  				overflow: hidden;
+  				background-color: #E6E6E6;
+  				position: fixed;
+  				z-index: 999999;
+  				width: 100%;
+  				top: 0;
+			}
+
+			.topnav a {
+  				float: left;
+  				color: black;
+  				text-align: center;
+  				padding: 14px 16px;
+  				text-decoration: none;
+  				font-size: 17px;
+			}
+
+			.topnav a:hover {
+  				background-color: #5C7E91;
+  				color: white;
+			}
+
+			.topnav a.active {
+  				background-color: #6950DE;
+  				color: white;
+			}
+
+			.topnav a.filter {
+  				float: right;
+  				color: black;
+  				text-align: center;
+  				padding: 5px 9px;
+			}
+			.topnav a.filter:hover {
+  				background-color: #5C7E91;
+  				color: white;
+			}
+
+			.topnav a.filter.active {
+  				background-color: #6950DE;
+  				color: white;
+			}
+			img {
+				object-fit: cover;
+				width: 35px;
+				height: 32px;
+				max-width: 100%;
+			}
+			.h2.usage {
+				text-align: center;
+				width: 100%;
+				font-size: 32;
+			}
+
+			.gr {
+				background-color: green;
+			}
+
+			.yl {
+				background-color: yellow;
+			}
+
+			.rd {
+				background-color: red;
+			}
+
+			th, td {
+				width: 25%;
+			}
+
+			table {
+				width: 100%;
+				background-color: white;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="topnav">
+  			<a class="active" href="#map">Карта</a>
+  			<a href="#usage">Как пользоваться</a>
+  			<a href="#standarts">Нормативы</a>
+  			<a class="filter" id="temp" onclick="change(this)"><img src="src/temp.svg" alt="Температура"></a>
+  			<a class="filter" id="press" onclick="change(this)"><img src="src/press.svg" alt="Давление"></a>
+  			<a class="filter" id="hum" onclick="change(this)"><img src="src/hum.svg" alt="Влажность"></a>
+  			<a class="filter" id="pm25" onclick="change(this)"><img src="src/pm25.svg" alt="PM 2.5"></a>
+  			<a class="filter" id="pm10" onclick="change(this)"><img src="src/pm10.svg" alt="PM 10"></a>
+		</div>
+		<div id="map" class="imp"></div>
+		<div id="usage" class="imp">
+			<center><h2 class="usage">Как пользоваться сервисом?</h2></center>
+			<p>Для оценки качества воздуха выберите иконки сверху. Если выбранный параметр будет учитываться, то значок показателя на верхней панели выделится фиолетовым.</p>
+
+		</div>
+		<div id="standarts" class="imp">
+			<center><h2 class="usage">Нормативы качества воздуха</h2></center>
+			<table>
+				<tr><th>Параметр</th><th class="gr"></th><th class="yl"></th><th class="rd"></th></tr>
+				<tr><td>PM 2.5 (мкг/м<sup>3</sup>)</td><td>0-75</td><td>76-150</td><td>151+</td></tr>
+				<tr><td>PM 10 (мкг/м<sup>3</sup>)</td><td>0-120</td><td>121-354</td><td>355+</td></tr>
+				<tr><td>Влажность (%)</td><td>30-50</td><td>25-29, 51-70</td><td>0-24, 71-100</td></tr>
+				<tr><td>Давление (мм. рт. ст.)</td><td>748</td><td>738-747, 749-758</td><td><738, >758</td></tr>
+				<tr><td>Температура (<sup>o</sup>C)</td><td>14-24</td><td>6-13, 25-30</td><td><6, >30</td></tr>
+			</table>
+		</div>
+
+
+		<script type="text/javascript">
+
+            var greenIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            var yellowIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            var redIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+			function change(x) {
+  				x.classList.toggle("active");
+			}
+
+			let config = {
+  				minZoom: 7,
+ 				maxZoom: 18,
+			};
+
+			const zoom = 14;
+
+			const lat = 52.6041877;
+			const lng = 39.5936899;
+
+
+			const map = L.map("map", config).setView([lat, lng], zoom);
+
+			L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  			attribution:
+    		'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+			}).addTo(map);
+
+			var selected = document.getElementsByClassName('filter active');
+			var selId = [];
+			for (let i = 0; i < selected.length; ++i) {
+			    selId.push(selected[i].id)
+            }
+			var toSend = {
+			    pm25: ("pm25" in selId ? 1 : 0),
+                pm10: ("pm10" in selId ? 1 : 0),
+                temp: ("temp" in selId ? 1 : 0),
+                press: ("press" in selId ? 1 : 0),
+                hum: ("hum" in selId ? 1 : 0),
+            }
+			var mrkr;
+			function update_markers() {
+                $.getJSON('http://127.0.0.1:8000/app/api', function(data) {
+                var cnt = data["count"];
+                for (let i = 0; i < cnt; ++i) {
+                    var lat = data["sensors"][i]["degrees"]["location"]["coordinates"]["lat"]
+                    var lon = data["sensors"][i]["degrees"]["location"]["coordinates"]["lon"]
+                    var color = data["sensors"][i]["color"]
+                    if (!mrkr) {
+                        if (color === 1) {
+                            mrkr = L.marker([lat, lon], {icon: greenIcon}).addTo(map);
+                        }
+                        if (color === 2) {
+                            mrkr = L.marker([lat, lon], {icon: yellowIcon}).addTo(map);
+                        }
+                        if (color === 3) {
+                            mrkr = L.marker([lat, lon], {icon: redIcon}).addTo(map);
+                        }
+                    }
+                    mrkr.setLatLng([lat, lon]).update();
+                }
+                setTimeout(update_position, 1000);
+            });
+        }
+            update_markers();
+		</script>
+	</body>
+</html>
